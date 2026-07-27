@@ -1,0 +1,3 @@
+# BulletCoach
+
+Project bootstrap.
