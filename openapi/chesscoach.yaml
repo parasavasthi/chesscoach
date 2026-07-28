@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
   title: ChessCoach Chess.com Public API
   version: 1.0.0
@@ -9,6 +9,7 @@ info:
 servers:
   - url: https://api.chess.com/pub
     description: Chess.com Published Data API
+security: []
 paths:
   /player/{username}:
     get:
@@ -29,10 +30,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PlayerProfile'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '429':
-          $ref: '#/components/responses/RateLimited'
   /player/{username}/stats:
     get:
       operationId: getStats
@@ -52,10 +49,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PlayerStats'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '429':
-          $ref: '#/components/responses/RateLimited'
   /player/{username}/games/archives:
     get:
       operationId: getArchives
@@ -75,10 +68,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ArchivesResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '429':
-          $ref: '#/components/responses/RateLimited'
   /player/{username}/games/{year}/{month}:
     get:
       operationId: getMonthlyGames
@@ -103,8 +92,6 @@ paths:
             type: integer
             minimum: 2007
             maximum: 2100
-            examples:
-              - 2026
         - name: month
           in: path
           required: true
@@ -112,9 +99,6 @@ paths:
           schema:
             type: string
             pattern: '^(0[1-9]|1[0-2])$'
-            examples:
-              - '01'
-              - '12'
       responses:
         '200':
           description: Public monthly games.
@@ -122,31 +106,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GamesResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '429':
-          $ref: '#/components/responses/RateLimited'
 components:
-  responses:
-    NotFound:
-      description: Player, archive, or requested public data was not found.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    RateLimited:
-      description: Too many requests. Retry later and avoid burst calls.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
   schemas:
-    ErrorResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          description: Human-readable error message when provided by Chess.com.
     PlayerProfile:
       type: object
       properties:
