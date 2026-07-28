@@ -15,7 +15,13 @@ paths:
       operationId: getPlayer
       summary: Get a public Chess.com player profile.
       parameters:
-        - $ref: '#/components/parameters/Username'
+        - name: username
+          in: path
+          required: true
+          description: Chess.com username.
+          schema:
+            type: string
+            minLength: 1
       responses:
         '200':
           description: Public player profile.
@@ -32,7 +38,13 @@ paths:
       operationId: getStats
       summary: Get public Chess.com ratings and records for a player.
       parameters:
-        - $ref: '#/components/parameters/Username'
+        - name: username
+          in: path
+          required: true
+          description: Chess.com username.
+          schema:
+            type: string
+            minLength: 1
       responses:
         '200':
           description: Public player statistics.
@@ -49,7 +61,13 @@ paths:
       operationId: getArchives
       summary: Get monthly archive URLs for a player's public games.
       parameters:
-        - $ref: '#/components/parameters/Username'
+        - name: username
+          in: path
+          required: true
+          description: Chess.com username.
+          schema:
+            type: string
+            minLength: 1
       responses:
         '200':
           description: Public monthly archive URLs.
@@ -70,9 +88,33 @@ paths:
         PGN move text, and match a shared Chess.com game URL against returned
         game.url values.
       parameters:
-        - $ref: '#/components/parameters/Username'
-        - $ref: '#/components/parameters/Year'
-        - $ref: '#/components/parameters/Month'
+        - name: username
+          in: path
+          required: true
+          description: Chess.com username.
+          schema:
+            type: string
+            minLength: 1
+        - name: year
+          in: path
+          required: true
+          description: Four-digit year for the monthly archive.
+          schema:
+            type: integer
+            minimum: 2007
+            maximum: 2100
+            examples:
+              - 2026
+        - name: month
+          in: path
+          required: true
+          description: Two-digit month for the monthly archive.
+          schema:
+            type: string
+            pattern: '^(0[1-9]|1[0-2])$'
+            examples:
+              - '01'
+              - '12'
       responses:
         '200':
           description: Public monthly games.
@@ -85,37 +127,6 @@ paths:
         '429':
           $ref: '#/components/responses/RateLimited'
 components:
-  parameters:
-    Username:
-      name: username
-      in: path
-      required: true
-      description: Chess.com username.
-      schema:
-        type: string
-        minLength: 1
-    Year:
-      name: year
-      in: path
-      required: true
-      description: Four-digit year for the monthly archive.
-      schema:
-        type: integer
-        minimum: 2007
-        maximum: 2100
-        examples:
-          - 2026
-    Month:
-      name: month
-      in: path
-      required: true
-      description: Two-digit month for the monthly archive.
-      schema:
-        type: string
-        pattern: '^(0[1-9]|1[0-2])$'
-        examples:
-          - '01'
-          - '12'
   responses:
     NotFound:
       description: Player, archive, or requested public data was not found.
