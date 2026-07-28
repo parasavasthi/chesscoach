@@ -1,0 +1,374 @@
+openapi: 3.1.0
+info:
+  title: ChessCoach Chess.com Public API
+  version: 1.0.0
+  description: >
+    Read-only Custom GPT Action schema for ChessCoach v1. This schema uses
+    Chess.com's public API only and exposes player profile, stats, game archive,
+    and monthly game endpoints for coaching analysis.
+servers:
+  - url: https://api.chess.com/pub
+    description: Chess.com Published Data API
+paths:
+  /player/{username}:
+    get:
+      operationId: getPlayer
+      summary: Get a public Chess.com player profile.
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Chess.com username.
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        '200':
+          description: Public player profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerProfile'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /player/{username}/stats:
+    get:
+      operationId: getStats
+      summary: Get public Chess.com ratings and records for a player.
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Chess.com username.
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        '200':
+          description: Public player statistics.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerStats'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /player/{username}/games/archives:
+    get:
+      operationId: getArchives
+      summary: Get monthly archive URLs for a player's public games.
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Chess.com username.
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        '200':
+          description: Public monthly archive URLs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchivesResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /player/{username}/games/{year}/{month}:
+    get:
+      operationId: getMonthlyGames
+      summary: Get all public games for a player in one month.
+      description: >
+        Use this endpoint to review recent games, filter by time_class, inspect
+        PGN move text, and match a shared Chess.com game URL against returned
+        game.url values.
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Chess.com username.
+          schema:
+            type: string
+            minLength: 1
+        - name: year
+          in: path
+          required: true
+          description: Four-digit year for the monthly archive.
+          schema:
+            type: integer
+            minimum: 2007
+            maximum: 2100
+            examples:
+              - 2026
+        - name: month
+          in: path
+          required: true
+          description: Two-digit month for the monthly archive.
+          schema:
+            type: string
+            pattern: '^(0[1-9]|1[0-2])$'
+            examples:
+              - '01'
+              - '12'
+      responses:
+        '200':
+          description: Public monthly games.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamesResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+components:
+  responses:
+    NotFound:
+      description: Player, archive, or requested public data was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RateLimited:
+      description: Too many requests. Retry later and avoid burst calls.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Human-readable error message when provided by Chess.com.
+    PlayerProfile:
+      type: object
+      properties:
+        '@id':
+          type: string
+          format: uri
+        url:
+          type: string
+          format: uri
+        username:
+          type: string
+        player_id:
+          type: integer
+        title:
+          type: string
+        status:
+          type: string
+        name:
+          type: string
+        avatar:
+          type: string
+          format: uri
+        location:
+          type: string
+        country:
+          type: string
+          format: uri
+        joined:
+          type: integer
+          description: Unix timestamp for account creation.
+        last_online:
+          type: integer
+          description: Unix timestamp for last online activity.
+        followers:
+          type: integer
+        is_streamer:
+          type: boolean
+        twitch_url:
+          type: string
+          format: uri
+        fide:
+          type: integer
+    PlayerStats:
+      type: object
+      properties:
+        chess_daily:
+          $ref: '#/components/schemas/GameModeStats'
+        chess960_daily:
+          $ref: '#/components/schemas/GameModeStats'
+        chess_rapid:
+          $ref: '#/components/schemas/GameModeStats'
+        chess_bullet:
+          $ref: '#/components/schemas/GameModeStats'
+        chess_blitz:
+          $ref: '#/components/schemas/GameModeStats'
+        fide:
+          type: integer
+        tactics:
+          $ref: '#/components/schemas/ActivityStats'
+        lessons:
+          $ref: '#/components/schemas/ActivityStats'
+        puzzle_rush:
+          $ref: '#/components/schemas/PuzzleRushStats'
+    GameModeStats:
+      type: object
+      properties:
+        last:
+          $ref: '#/components/schemas/RatingSnapshot'
+        best:
+          $ref: '#/components/schemas/BestRatingSnapshot'
+        record:
+          $ref: '#/components/schemas/Record'
+        tournament:
+          $ref: '#/components/schemas/TournamentRecord'
+    RatingSnapshot:
+      type: object
+      properties:
+        date:
+          type: integer
+          description: Unix timestamp.
+        rating:
+          type: integer
+        rd:
+          type: integer
+    BestRatingSnapshot:
+      type: object
+      properties:
+        date:
+          type: integer
+          description: Unix timestamp.
+        rating:
+          type: integer
+        game:
+          type: string
+          format: uri
+    Record:
+      type: object
+      properties:
+        win:
+          type: integer
+        loss:
+          type: integer
+        draw:
+          type: integer
+        time_per_move:
+          type: integer
+        timeout_percent:
+          type: number
+    TournamentRecord:
+      type: object
+      properties:
+        points:
+          type: integer
+        withdraw:
+          type: integer
+        count:
+          type: integer
+        highest_finish:
+          type: integer
+    ActivityStats:
+      type: object
+      properties:
+        highest:
+          $ref: '#/components/schemas/ActivitySnapshot'
+        lowest:
+          $ref: '#/components/schemas/ActivitySnapshot'
+    ActivitySnapshot:
+      type: object
+      properties:
+        rating:
+          type: integer
+        date:
+          type: integer
+          description: Unix timestamp.
+    PuzzleRushStats:
+      type: object
+      properties:
+        best:
+          $ref: '#/components/schemas/PuzzleRushScore'
+        daily:
+          $ref: '#/components/schemas/PuzzleRushScore'
+    PuzzleRushScore:
+      type: object
+      properties:
+        total_attempts:
+          type: integer
+        score:
+          type: integer
+    ArchivesResponse:
+      type: object
+      required:
+        - archives
+      properties:
+        archives:
+          type: array
+          items:
+            type: string
+            format: uri
+    GamesResponse:
+      type: object
+      required:
+        - games
+      properties:
+        games:
+          type: array
+          items:
+            $ref: '#/components/schemas/Game'
+    Game:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        pgn:
+          type: string
+        time_control:
+          type: string
+        end_time:
+          type: integer
+          description: Unix timestamp.
+        rated:
+          type: boolean
+        fen:
+          type: string
+        time_class:
+          type: string
+          enum:
+            - daily
+            - rapid
+            - blitz
+            - bullet
+        rules:
+          type: string
+        white:
+          $ref: '#/components/schemas/GamePlayer'
+        black:
+          $ref: '#/components/schemas/GamePlayer'
+        accuracies:
+          $ref: '#/components/schemas/Accuracies'
+        eco:
+          type: string
+          format: uri
+        uuid:
+          type: string
+    GamePlayer:
+      type: object
+      properties:
+        rating:
+          type: integer
+        result:
+          type: string
+        '@id':
+          type: string
+          format: uri
+        username:
+          type: string
+        uuid:
+          type: string
+    Accuracies:
+      type: object
+      properties:
+        white:
+          type: number
+        black:
+          type: number
