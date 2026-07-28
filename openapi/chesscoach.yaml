@@ -4,8 +4,8 @@ info:
   version: 1.0.0
   description: >
     Read-only Custom GPT Action schema for ChessCoach v1. This schema uses
-    Chess.com's public API only and exposes player profile, stats, game archive,
-    and monthly game endpoints for coaching analysis.
+    Chess.com's public API only and exposes player profile, stats, and game
+    archive URL endpoints for coaching triage.
 servers:
   - url: https://api.chess.com/pub
     description: Chess.com Published Data API
@@ -68,44 +68,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ArchivesResponse'
-  /player/{username}/games/{year}/{month}:
-    get:
-      operationId: getMonthlyGames
-      summary: Get all public games for a player in one month.
-      description: >
-        Use this endpoint to review recent games, filter by time_class, inspect
-        PGN move text, and match a shared Chess.com game URL against returned
-        game.url values.
-      parameters:
-        - name: username
-          in: path
-          required: true
-          description: Chess.com username.
-          schema:
-            type: string
-            minLength: 1
-        - name: year
-          in: path
-          required: true
-          description: Four-digit year for the monthly archive.
-          schema:
-            type: integer
-            minimum: 2007
-            maximum: 2100
-        - name: month
-          in: path
-          required: true
-          description: Two-digit month for the monthly archive.
-          schema:
-            type: string
-            pattern: '^(0[1-9]|1[0-2])$'
-      responses:
-        '200':
-          description: Public monthly games.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GamesResponse'
 components:
   schemas:
     PlayerProfile:
@@ -266,70 +228,3 @@ components:
           items:
             type: string
             format: uri
-    GamesResponse:
-      type: object
-      required:
-        - games
-      properties:
-        games:
-          type: array
-          items:
-            $ref: '#/components/schemas/Game'
-    Game:
-      type: object
-      properties:
-        url:
-          type: string
-          format: uri
-        pgn:
-          type: string
-        time_control:
-          type: string
-        end_time:
-          type: integer
-          description: Unix timestamp.
-        rated:
-          type: boolean
-        fen:
-          type: string
-        time_class:
-          type: string
-          enum:
-            - daily
-            - rapid
-            - blitz
-            - bullet
-        rules:
-          type: string
-        white:
-          $ref: '#/components/schemas/GamePlayer'
-        black:
-          $ref: '#/components/schemas/GamePlayer'
-        accuracies:
-          $ref: '#/components/schemas/Accuracies'
-        eco:
-          type: string
-          format: uri
-        uuid:
-          type: string
-    GamePlayer:
-      type: object
-      properties:
-        rating:
-          type: integer
-        result:
-          type: string
-        '@id':
-          type: string
-          format: uri
-        username:
-          type: string
-        uuid:
-          type: string
-    Accuracies:
-      type: object
-      properties:
-        white:
-          type: number
-        black:
-          type: number

@@ -1,8 +1,8 @@
 # ChessCoach
 
-ChessCoach is a Custom GPT workflow for reviewing public Chess.com games like a practical chess coach. It uses the Chess.com Published Data API to fetch public profiles, stats, archive lists, and monthly games, then guides the GPT to explain recurring patterns, opening habits, rating trends, opponent tendencies, and study priorities.
+ChessCoach is a Custom GPT workflow for reviewing public Chess.com profiles and stats like a practical chess coach. In v1, the GPT Action safely retrieves public player profiles, rating stats, and archive URLs. Full monthly game and PGN analysis is intentionally deferred to a future backend because raw monthly game responses can exceed ChatGPT Actions response-size limits.
 
-This repository is intentionally documentation-first for v1: no unnecessary app code, no private-account access, and no backend implementation until the Custom GPT workflow is proven.
+This repository is documentation-first for v1: no unnecessary app code, no private-account access, and no backend implementation until the Custom GPT workflow is proven.
 
 ## Where to see the v1 changes
 
@@ -15,9 +15,9 @@ If the repository view still looks unchanged, check that you are on the branch c
 
 ## Available now
 
-- A GPT Actions-ready OpenAPI schema for Chess.com public endpoints.
-- A reusable system prompt that makes the GPT behave like a chess coach.
-- Example user prompts for game review, opponent analysis, opening analysis, rating trends, and study advice.
+- A GPT Actions-ready OpenAPI schema for safe Chess.com public profile, stats, and archive URL endpoints.
+- A reusable system prompt that makes the GPT behave like a chess coach while respecting Actions limits.
+- Example user prompts for rating review, opponent analysis, opening planning from available metadata, and study advice.
 - Usage, architecture, roadmap, backend, and Stockfish planning docs.
 
 ## How to use the Custom GPT
@@ -30,7 +30,7 @@ If the repository view still looks unchanged, check that you are on the branch c
 Example:
 
 ```text
-My Chess.com username is <username>. Look at my recent rapid games and tell me the top three recurring mistakes.
+My Chess.com username is <username>. Review my public stats and tell me what I should study first.
 ```
 
 ## How to import the OpenAPI schema
@@ -39,13 +39,13 @@ My Chess.com username is <username>. Look at my recent rapid games and tell me t
 2. Choose **Create new action**.
 3. Paste the full contents of `openapi/chesscoach.yaml` into the schema editor.
 4. Save the action.
-5. Test `getPlayer`, then `getStats`, then `getArchives`, then `getMonthlyGames`.
+5. Test `getPlayer`, then `getStats`, then `getArchives`.
 
-The schema calls Chess.com's public API directly. It does not require or support Chess.com login credentials.
+The schema calls Chess.com's public API directly. It does not require or support Chess.com login credentials. It does not fetch monthly game archives directly because those responses can be too large for ChatGPT Actions.
 
 ## What comes later
 
-A future backend can make ChessCoach stronger by fetching several archives safely, parsing PGNs, caching responses, running Stockfish on selected positions, and returning structured engine-backed coaching reports. That future work is documented in `backend/README.md` and `backend/stockfish_plan.md`.
+A future backend will fetch monthly Chess.com game data server-side, parse PGNs, cache responses, run Stockfish on selected positions, and return compact coaching reports such as `GET /players/{username}/analysis?month=YYYY-MM`. That backend design avoids sending raw monthly PGN payloads through ChatGPT Actions.
 
 ## Repository structure
 

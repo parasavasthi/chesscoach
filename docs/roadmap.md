@@ -3,19 +3,21 @@
 ## Milestone 1: ChessCoach v1 foundation
 
 - Maintain a clean documentation-first repository.
-- Provide a GPT Actions-ready Chess.com public API schema.
+- Provide a GPT Actions-ready Chess.com public API schema for profile, stats, and archive URLs.
 - Provide coach instructions and example prompts.
-- Document usage, architecture, roadmap, backend plans, and Stockfish plans.
+- Document why monthly game and PGN analysis moves to the backend.
 
 ## Milestone 2: Custom GPT testing
 
 - Import `openapi/chesscoach.yaml` into a Custom GPT Action.
-- Test `getPlayer`, `getStats`, `getArchives`, and `getMonthlyGames`.
-- Confirm the GPT can analyse self-review, opponent analysis, opening analysis, rating trends, and study advice prompts.
+- Test `getPlayer`, `getStats`, and `getArchives`.
+- Confirm the GPT can analyse public stats, opponent profiles, rating trends, archive availability, and study advice prompts.
 
 ## Milestone 3: Backend design
 
-- Define backend response contracts for aggregated coaching reports.
+- Define backend response contracts for compact coaching reports.
+- Add `GET /players/{username}/analysis?month=YYYY-MM`.
+- Fetch Chess.com monthly games server-side instead of through GPT Actions.
 - Add safe Chess.com request handling, caching, and rate-limit protection.
 - Parse PGN data into positions, moves, openings, results, and time-control metadata.
 
